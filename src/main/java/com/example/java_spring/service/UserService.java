@@ -22,7 +22,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.image.ImageProducer;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -205,9 +207,8 @@ public class UserService {
 
     // 유저 정보 수정
     @Transactional
-    public void setUser(Integer userId, Integer targetId, UpdateUser updateUser) {
+    public void setUser(Integer userId, Integer targetId, String description, MultipartFile userImage) {
         boolean existUser = userRepository.existsByIdAndDeletedAtIsNull(userId);
-
         if (!existUser) {
             throw new UnauthorizedException("잘못된 또는 만료된 토큰입니다.");
         }
@@ -223,13 +224,14 @@ public class UserService {
             throw new NotFoundException("요청한 사용자의 이미지를 찾을 수 없습니다.");
         }
 
-        String updateDesc = updateUser.getDescription();
-        String imageUrl = updateUser.getUserImage();
+        // 파일을 저장하고 경로를 user 엔티티에 설정합니다.
 
-        targetUser.setDescription(updateDesc);
+        String imagePath = UserImage.saveUserImage(userImage);  // saveUserImage 메서드는 파일을 저장하고 경로를 반환하는 메서드입니다.
+
+        targetUser.setDescription(description);
         userRepository.save(targetUser); // 변경된 내용 저장
 
-        targetUserImage.setImage_url(imageUrl);
+        targetUserImage.setImage_url(imagePath);
         userImageRepository.save(targetUserImage);
     }
 

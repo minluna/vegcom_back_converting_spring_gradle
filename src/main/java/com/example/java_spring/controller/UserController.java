@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -89,13 +91,15 @@ public class UserController {
 
     // 유저 정보 수정
     @PutMapping("/{targetId}")
-    public ResponseEntity<Object> updateUser(Authentication authentication, @PathVariable(name = "targetId") Integer targetId, @Valid @RequestBody UpdateUser updateUser) {
-        userService.setUser(((JwtUser) authentication.getPrincipal()).getUserId(), targetId, updateUser);
+    public ResponseEntity<Object> updateUser(Authentication authentication, @PathVariable(name = "targetId") Integer targetId, @RequestParam("description") String description,
+                                             @RequestParam("userImage") MultipartFile userImage) {
+        log.warn("UserImage: " + userImage.getOriginalFilename());
+        userService.setUser(((JwtUser) authentication.getPrincipal()).getUserId(), targetId, description, userImage);
 
         return ResponseEntity.ok(
                 Result.res(HttpStatus.OK.toString(),
                         "유저 정보 수정하기가 성공적으로 완료되었습니다.",
-                        updateUser));
+                        description));
     }
 
     // 유저 정보 삭제
